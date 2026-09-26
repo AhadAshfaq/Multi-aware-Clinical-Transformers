@@ -1,13 +1,12 @@
 # General Cancer (GC) self-supervised pretraining configuration.
 #
-# Final thesis workflow:
+# Workflow:
 #   1. Construct the patient-excluded GC cohort from authorized MIMIC-IV data.
 #   2. Generate GC-only pretraining tensors and event-position masks.
 #   3. Pretrain the EMIT-based model on GC.
 #   4. Use the saved GC checkpoint to initialize AP/NF fine-tuning folds.
 #
-# All paths reference restricted MIMIC-IV-derived files and must be supplied
-# locally by credentialed users. Do not commit data, checkpoints, or results.
+# All paths reference restricted MIMIC-IV-derived files and must be supplied locally by credentialed users. Do not commit data, checkpoints, or results.
 
 cohort_name: GC
 seed: 2021
@@ -27,13 +26,7 @@ USE_FORECASTING_ABLATION: false
 target_mode: val_var_time
 
 # Reconstruction-loss mode.
-# Options:
-#   standard
-#   inverse_frequency
-#   proportional_frequency
-#   temporal_weighted
-#   relative_temporal
-#   clinical_regularized
+# Options: 'standard', 'proportional_frequency', 'inverse_frequency', 'temporal_weighted', 'relative_temporal', 'clinical_regularized' 
 loss_type: inverse_frequency
 
 # Event-position masking strategy.
@@ -41,13 +34,14 @@ loss_type: inverse_frequency
 masking_strategy: rate_of_change
 
 # Masking probabilities.
-random_mask_prob: 0.50
-pathological_mask_prob: 0.60
-normal_mask_prob: 0.40
-rare_mask_prob: 0.60
-common_mask_prob: 0.40
-recent_mask_prob: 0.60
-old_mask_prob: 0.40
+random_mask_prob: 0.50            # Random Mode: chance to hide ANY event
+pathological_mask_prob: 0.60      # Clinical Mode: chance to hide out-of-bounds events
+normal_mask_prob: 0.40            # Clinical Mode: chance to hide stable/normal events
+rare_mask_prob: 0.60              # Frequency Mode: chance to hide the rarest events
+common_mask_prob: 0.40            # Frequency Mode: chance to hide the most common events
+recent_mask_prob: 0.60            # Temporal Mode: chance to hide pre-crash events (Time 1.0)
+old_mask_prob: 0.40               # Temporal Mode: chance to hide baseline events (Time 0.0)
+
 
 # Rate-of-Change masking parameters.
 # Events with |delta value / delta time| > mask_threshold receive masking
@@ -56,10 +50,12 @@ old_mask_prob: 0.40
 mask_threshold: 0.001
 insignificant_prob: 0.40
 
-# Optional frequency-weight files used only for frequency
-# loss experiments. These files are derived from the full AP/NF packages and
-# have the limitation documented in the thesis. Set the relevant path when a
-# frequency loss is selected; otherwise leave null.
+# Frequency-weight files are used only for inverse_frequency or proportional_frequency GC reconstruction-loss experiments.
+# When "run_master_pipeline.sh" is used, leave both paths null. For a frequency loss, the script pretrains GC twice: 
+# it passes AP-derived weights to the checkpoint used for AP fine-tuning, and NF-derived weights to the checkpoint
+# used for NF fine-tuning. These command-line overrides do not modify this YAML.
+# If pretrain_chemo.py is run directly instead, supply the appropriate AP or NF weight-file path explicitly for the selected loss type.
+
 inverse_frequency_weights_path: null
 proportional_frequency_weights_path: null
 
@@ -68,23 +64,22 @@ data_path: data/pre_training/pretraining_data_chemo_GC.npz
 mask_path: data/pre_training/chemo_GC_event_masks.npz
 
 # Architecture.
-max_len: 1035
-V: 102
-d: 128
-N: 2
-he: 8
-dropout: 0.2
+max_len: 1035           # Kept at 1035 to ensure the embedding size is large enough to handle both NF and AP later
+V: 102                  # The Top 100 most frequent clinical features + 2 Demographics = 102               
+d: 128                  # Dimension of the embeddings.
+N: 2                    # Number of transformer encoder blocks in the model.
+he: 8                   # Number of attention heads in the model's multi-head attention mechanism.
+dropout: 0.2            # Neural Network Regularization parameters to prevent overfitting
 
 # Optimization.
-batch_size: 32
-learning_rate: 0.0005
-weight_decay: 0.0
-epochs: 1
-patience: 10
-error_coefficient: 8
+batch_size: 32              # Batch size for training during pretraining.
+learning_rate: 0.0005       # Learning rate for the pretraining process
+weight_decay: 0.0           # Weight decay coefficient for L2 regularization.
+epochs: 100                 # Number of training epochs for pretraining
+patience: 10                # If the Validation Loss doesn't improve for "10" consecutive epochs, stop training immediately.
+error_coefficient: 8        # Coefficient used for weighing the error from the masked events during pretraining.
 
-# Computational training budget. This is the number of GC admission sequences
-# sampled per epoch, not the GC cohort size.
+# Number of samples to be processed per epoch during pretraining.
 samples_per_epoch: 3200
 
 # Restricted local checkpoint output.
