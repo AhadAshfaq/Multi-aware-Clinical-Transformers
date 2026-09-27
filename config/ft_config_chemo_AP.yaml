@@ -16,7 +16,7 @@ USE_7_DAY_WINDOW: False
 # Fold-specific package path. Batch scripts override this for folds 0--4.
 data_path: data/pre_processed/chemo_AP_fold_0.pkl
 
-# Shared GC checkpoint. Required when use_pretrained_weights is true.
+# GC-pretrained checkpoint selected by the pipeline. Required when use_pretrained_weights is true.
 pt_model_weights_path: pretrained_models/Chemo/EMIT_MAE/GC/EMIT_Chemo_GC_128d.weights.h5
 use_pretrained_weights: true
 
@@ -33,10 +33,10 @@ dropout: 0.4                # Neural Network Regularization parameters to preven
 
 # Fine-tuning optimization.
 batch_size: 32                # Batch size for finetuning.
-learning_rate: 0.00005        # Learning rate for the pretraining process
+learning_rate: 0.00005        # Learning rate for the finetuning process
 weight_decay: 0.0001          # Weight decay coefficient for L2 regularization.
-epochs: 100                   # Number of training epochs for pretraining
-patience: 10                  # If the Validation Loss doesn't improve for "10" consecutive epochs, stop training immediately.
+epochs: 1                   # Number of training epochs for finetuning
+patience: 10                  # If the Validation Loss doesn't improve for "10" consecutive epochs, stop finetuning immediately.
 
 # Labeled-data fraction and repeat count used in the thesis experiments.
 lds: [100]
@@ -52,6 +52,7 @@ pos_ratio: 0.25
 
 # Output names are overridden by experiment scripts.
 file_name: ap_finetuning_fold
+# Standalone default; run_master_pipeline.sh overrides this per fold with a RUN_TAG-specific path.
 results_path: results/Chemo/EMIT_MAE/testing/AP_frequency/${file_name}.pkl
 
 hydra:
