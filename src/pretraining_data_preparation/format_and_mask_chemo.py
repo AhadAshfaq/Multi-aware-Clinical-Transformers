@@ -1,11 +1,11 @@
 """
-Create GC pretraining tensors and event-position masks for the thesis workflow.
+Create GC pretraining tensors and event-position masks for the workflow.
 
 This script converts the patient-excluded General Cancer (GC) cohort package
 created by `preprocess_chemo.py` into dense arrays used for self-supervised
 pretraining of the EMIT-based model.
 
-The final thesis workflow uses GC only for self-supervised pretraining:
+The workflow uses GC only for self-supervised pretraining:
     GC pretraining tensors and masks -> GC checkpoint -> AP/NF fine-tuning.
 
 The script performs the following steps:
@@ -15,14 +15,12 @@ The script performs the following steps:
    clinical variables plus Age and Gender.
 4. Supports Hybrid reconstruction--forecasting and Pure MAE pretraining.
 5. Orders events chronologically, retains the most recent `max_len` events per
-   admission, and creates padded time, value, variable-ID, and clinical-weight
-   matrices.
+   admission, and creates padded time, value, variable-ID, and clinical-weight matrices.
 6. Generates event-position masks using one configured strategy:
    `rate_of_change`, `random`, `clinical`, `frequency`, or `temporal`.
 7. Saves train/validation tensors and train/validation masks.
 
-All inputs and outputs are derived from restricted MIMIC-IV data and must not
-be committed to a public repository.
+All inputs and outputs are derived from the restricted MIMIC-IV data and cannot be committed to a public repository.
 """
 
 from __future__ import annotations
@@ -103,8 +101,7 @@ def load_gc_package(
     """
     Load the GC preprocessed event table and train/validation/test index arrays.
 
-    GC is used only for pretraining. The package must therefore contain an
-    empty test-index array.
+    GC is used only for pretraining. The package must therefore contain an empty test-index array.
     """
     with package_path.open("rb") as handle:
         data, _, train_indices, valid_indices, test_indices = pickle.load(handle)
