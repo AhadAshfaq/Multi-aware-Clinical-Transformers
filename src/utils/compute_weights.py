@@ -1,5 +1,5 @@
 """
-Compute frequency-derived reconstruction weights for thesis-reproduction runs.
+Compute frequency-derived reconstruction weights.
 
 This script calculates variable occurrence counts from the full preprocessed
 Aplasia (AP) or Neutropenic Fever (NF) cohort package and converts them into
@@ -20,8 +20,7 @@ For a stricter leakage-controlled extension, calculate counts from the external
 General Cancer (GC) pretraining cohort or separately from each active
 fine-tuning fold's training admissions.
 
-All input packages and output weight files are derived from restricted MIMIC-IV
-data and must not be committed to a public repository.
+All input packages and output weight files are derived from restricted MIMIC-IV data and cannot be committed to a public repository.
 """
 
 from __future__ import annotations
@@ -42,8 +41,7 @@ def parse_args() -> argparse.Namespace:
     """Parse paths, downstream cohort, and frequency-weighting strategy."""
     parser = argparse.ArgumentParser(
         description=(
-            "Compute full-cohort frequency weights for AP/NF thesis-reproduction "
-            "experiments."
+            "Compute full-cohort frequency weights for AP/NF experiments."
         )
     )
     parser.add_argument(
@@ -92,8 +90,7 @@ def build_master_vocabulary(top_features_path: Path) -> dict[str, int]:
     Build the fixed 102-variable mapping used by the final GC pretraining pipeline.
 
     The mapping consists of the supplied top-100 clinical variable identifiers
-    plus the static Age and Gender event variables. Integer index 0 is reserved
-    for padding.
+    plus the static Age and Gender event variables. Integer index 0 is reserved for padding.
     """
     with top_features_path.open("rb") as handle:
         top_features = pickle.load(handle)
@@ -116,8 +113,7 @@ def load_full_event_table(package_path: Path) -> pd.DataFrame:
     Load the full event table from an AP/NF fold-0 preprocessing package.
 
     The first element of the saved package is the complete cohort event table,
-    not only the fold-0 training subset. This intentionally reproduces the
-    frequency-statistic procedure used in the thesis.
+    not only the fold-0 training subset.
     """
     with package_path.open("rb") as handle:
         events, _, _, _, _ = pickle.load(handle)
@@ -215,8 +211,7 @@ def main() -> None:
         f"{args.cohort} cohort event table."
     )
     print(
-        "Note: this reproduces the thesis frequency-statistic procedure and "
-        "is not fold-isolated."
+        "Note: this reproduces the frequency-statistic procedure and is not fold-isolated."
     )
 
     variable_to_index = build_master_vocabulary(top_features_path)
