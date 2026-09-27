@@ -216,7 +216,7 @@ def load_and_generate_train_val_test_sets(
     test_ip :
         Test input arrays with the same structure.
     train_op :
-        Training binary labels (in-hospital mortality).
+        Training binary labels (binary outcome labels from the fold package).
     valid_op :
         Validation binary labels.
     test_op :
