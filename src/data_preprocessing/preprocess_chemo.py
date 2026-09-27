@@ -1,5 +1,5 @@
 """
-Prepare GC, AP, and NF cohorts for the final thesis workflow.
+Prepare GC, AP, and NF cohorts for the workflow.
 
 This script converts restricted MIMIC-IV-derived cohort files into a common
 event-table and fold-package format for the EMIT-based pipeline.
@@ -7,16 +7,15 @@ event-table and fold-package format for the EMIT-based pipeline.
 Cohort roles
 ------------
 GC:
-    External General Cancer cohort used only for self-supervised pretraining.
+    External GC cohort used only for self-supervised pretraining.
     A deterministic 80/20 train/validation split is created. No test split is
     created because GC outcome labels are not used during pretraining.
 
 AP and NF:
-    Downstream Aplasia and Neutropenic Fever cohorts used for fold-specific
-    supervised fine-tuning and held-out test evaluation. The script preserves
-    the five predefined train/validation/test splits supplied with the cohort
-    extraction protocol.
-
+    Downstream AP and NF cohorts used for fold-specific supervised fine-tuning 
+    and held-out test evaluation. The script preserves the five predefined 
+    train/validation/test splits supplied with the cohort extraction protocol.
+    
 Processing steps
 ----------------
 1. Map raw MIMIC-IV admission identifiers to compact, cohort-specific `ts_ind`
