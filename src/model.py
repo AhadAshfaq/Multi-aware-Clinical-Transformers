@@ -1,9 +1,8 @@
 """
-EMIT/STraTS-derived continuous-time event model.
+Continuous-time event model.
 
 This module defines the shared neural architecture used for General Cancer (GC)
-self-supervised pretraining and fold-specific Aplasia (AP) and Neutropenic
-Fever (NF) fine-tuning.
+self-supervised pretraining and fold-specific Aplasia (AP) and Neutropenic Fever (NF) fine-tuning.
 
 Each clinical event is represented by:
     - event time,
@@ -14,7 +13,7 @@ The architecture:
 1. Encodes continuous time and values using Continuous Value Embedding (CVE).
 2. Encodes variable identity using a learned embedding table.
 3. Adds the three embeddings to form an event-triplet representation.
-4. Applies padding-aware multi-head Transformer encoding.
+4. Applies padding-aware multi-head transformer encoding.
 5. Aggregates event representations using global attention pooling.
 6. Produces a dense output used by the pretraining or downstream fine-tuning
    pipelines.
@@ -162,7 +161,7 @@ class Attention(Layer):
 
 class Transformer(Layer):
     """
-    Padding-aware multi-head Transformer encoder.
+    Padding-aware multi-head transformer encoder.
 
     Each block contains multi-head self-attention, residual connections, layer
     normalization, a two-layer feed-forward network, and dropout.
@@ -272,11 +271,8 @@ class Transformer(Layer):
         mask_value: float = -1e-30,
     ) -> tf.Tensor:
         """
-        Encode event embeddings through N Transformer blocks.
-
-        The original implementation uses `-1e-30` for masked attention logits.
-        This value is retained for compatibility with the thesis-reproduction
-        implementation and existing checkpoints.
+        Encode event embeddings through N transformer blocks.
+        The implementation uses `-1e-30` for masked attention logits.
         """
         if training is None:
             training = True
@@ -410,18 +406,18 @@ def build_strats(
     dropout: float,
 ) -> Model:
     """
-    Build the shared EMIT/STraTS-derived base model.
+    Build the shared base model.
 
     Parameters
     ----------
     max_len:
         Fixed number of event positions per admission.
     V:
-        Vocabulary size excluding padding. The thesis workflow uses V=102.
+        Vocabulary size excluding padding. The workflow uses V=102.
     d:
         Event-embedding dimension.
     N:
-        Number of Transformer blocks.
+        Number of transformer blocks.
     he:
         Number of attention heads.
     dropout:
