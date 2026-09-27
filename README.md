@@ -1,6 +1,6 @@
 # Code accompanying the Master's thesis:
 
-> Advancing representation learning of clinical time series via multi-aware Transformers
+> Advancing representation learning of clinical time series via multi-aware transformers
 
 The project evaluates continuous-time masked autoencoding and downstream clinical event prediction on sparse oncology time-series data.
 
@@ -14,6 +14,26 @@ The project evaluates continuous-time masked autoencoding and downstream clinica
 - `src/utils/`: frequency-weight generation and supporting utilities.
 - `config/`: GC pretraining and AP/NF fine-tuning configurations.
 - `run_master_pipeline.sh`: SLURM orchestration script.
+
+## Configuration and outputs
+
+Set the GC pretraining loss and masking strategy in
+`config/pt_config_chemo_GC.yaml`. Set AP and NF observation windows,
+sequence lengths, batching, and optimization in
+`config/ft_config_chemo_AP.yaml` and `config/ft_config_chemo_NF.yaml`.
+A single submission runs the selected configuration; it does not sweep
+all configurations reported in the thesis.
+
+By default, the master script rebuilds cohort packages and GC masks.
+For inverse- or proportional-frequency reconstruction loss, it runs
+separate GC pretraining passes with AP- and NF-derived frequency
+statistics, respectively, then fine-tunes the matching downstream
+cohort. Other loss types use one shared GC checkpoint.
+
+The script creates run-tagged checkpoint and result directories. It
+overrides the `model_name` and fold-specific `data_path`,
+`pt_model_weights_path`, and `results_path` defaults in the YAML files.
+Output artifacts are restricted and must not be published.
 
 ## Data access
 
