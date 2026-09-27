@@ -75,7 +75,7 @@ dropout: 0.2            # Neural Network Regularization parameters to prevent ov
 batch_size: 32              # Batch size for training during pretraining.
 learning_rate: 0.0005       # Learning rate for the pretraining process
 weight_decay: 0.0           # Weight decay coefficient for L2 regularization.
-epochs: 1                 # Number of training epochs for pretraining
+epochs: 100                 # Number of training epochs for pretraining
 patience: 10                # If the Validation Loss doesn't improve for "10" consecutive epochs, stop training immediately.
 error_coefficient: 8        # Coefficient used for weighing the error from the masked events during pretraining.
 
