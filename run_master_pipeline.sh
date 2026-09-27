@@ -6,9 +6,11 @@
 #SBATCH --output=master_log_%j.txt
 #SBATCH --error=master_err_%j.txt
 # GC preparation and pretraining, then task-matched AP/NF five-fold fine-tuning.
-# Usage: sbatch --export=ALL,LOSS_TYPE=standard,MASKING_STRATEGY=rate_of_change run_master_pipeline.sh
+# Select loss_type and masking_strategy in config/pt_config_chemo_GC.yaml.
+# Usage: sbatch run_master_pipeline.sh
 # Optional: set RUN_TAG, REBUILD_DATA=0, or SKIP_FORMATTING=1 as described below.
 # Restricted MIMIC-derived inputs, checkpoints and results must stay private.
+
 set -euo pipefail
 export PYTHONUNBUFFERED=1
 
@@ -66,11 +68,66 @@ mapfile -t SETTINGS_LINES <<< "$EXPERIMENT_SETTINGS"
 LOSS_TYPE="${SETTINGS_LINES[0]}"
 MASKING_STRATEGY="${SETTINGS_LINES[1]}"
 
+# 1: rerun GC extraction, AP/NF/GC preprocessing, and all four frequency-weight generators. 0: reuse the existing preprocessed fold and weight files.
 REBUILD_DATA="${REBUILD_DATA:-1}"
+# 0: rerun GC tensor formatting and generate the GC event-mask file using the current YAML. 1: reuse the existing GC tensor and mask files.
 SKIP_FORMATTING="${SKIP_FORMATTING:-0}"
 
-# Override RUN_TAG for another experiment with otherwise identical settings.
-RUN_TAG="${RUN_TAG:-${MASKING_STRATEGY}_${LOSS_TYPE}}"
+# Build a readable experiment label plus a fingerprint of all three YAMLs.
+# RUN_TAG can still be supplied explicitly, but the default needs no CLI input.
+AUTO_RUN_TAG="$(
+    python - \
+        "$PT_CONFIG" \
+        "$ROOT/config/ft_config_chemo_AP.yaml" \
+        "$ROOT/config/ft_config_chemo_NF.yaml" <<'PY'
+import hashlib
+import json
+import re
+import sys
+
+from omegaconf import OmegaConf
+
+pt = OmegaConf.load(sys.argv[1])
+ap = OmegaConf.load(sys.argv[2])
+nf = OmegaConf.load(sys.argv[3])
+
+def window_label(cfg):
+    return "7d" if bool(cfg.USE_7_DAY_WINDOW) else "14d"
+
+def safe(text):
+    return re.sub(r"[^A-Za-z0-9_-]", "_", str(text))
+
+readable = "_".join([
+    safe(pt.masking_strategy),
+    safe(pt.loss_type),
+    f"GC{window_label(pt)}",
+    f"L{int(pt.max_len)}",
+    safe(pt.target_mode),
+    "hybrid" if bool(pt.USE_FORECASTING_ABLATION) else "MAE",
+    f"PTbs{int(pt.batch_size)}",
+    f"AP{window_label(ap)}L{int(ap.max_seq_length)}",
+    f"NF{window_label(nf)}L{int(nf.max_seq_length)}",
+])
+
+configs = []
+for cfg in (pt, ap, nf):
+    content = OmegaConf.to_container(cfg, resolve=False)
+    content.pop("hydra", None)
+    configs.append(content)
+
+payload = json.dumps(
+    configs,
+    sort_keys=True,
+    separators=(",", ":"),
+    default=str,
+).encode("utf-8")
+fingerprint = hashlib.sha256(payload).hexdigest()[:10]
+
+print(f"{readable}_{fingerprint}")
+PY
+)"
+
+RUN_TAG="${RUN_TAG:-$AUTO_RUN_TAG}"
 
 case "$LOSS_TYPE" in
     standard|inverse_frequency|proportional_frequency|temporal_weighted|relative_temporal|clinical_regularized) ;;
