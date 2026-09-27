@@ -64,7 +64,7 @@ data_path: data/pre_training/pretraining_data_chemo_GC.npz
 mask_path: data/pre_training/chemo_GC_event_masks.npz
 
 # Architecture.
-max_len: 1035           # Kept at 1035 to ensure the embedding size is large enough to handle both NF and AP later
+max_len: 1035           # Kept at 1035 to ensure the  sequence length is large enough to handle both NF and AP later
 V: 102                  # The Top 100 most frequent clinical features + 2 Demographics = 102               
 d: 128                  # Dimension of the embeddings.
 N: 2                    # Number of transformer encoder blocks in the model.
@@ -75,7 +75,7 @@ dropout: 0.2            # Neural Network Regularization parameters to prevent ov
 batch_size: 32              # Batch size for training during pretraining.
 learning_rate: 0.0005       # Learning rate for the pretraining process
 weight_decay: 0.0           # Weight decay coefficient for L2 regularization.
-epochs: 100                 # Number of training epochs for pretraining
+epochs: 1                 # Number of training epochs for pretraining
 patience: 10                # If the Validation Loss doesn't improve for "10" consecutive epochs, stop training immediately.
 error_coefficient: 8        # Coefficient used for weighing the error from the masked events during pretraining.
 
