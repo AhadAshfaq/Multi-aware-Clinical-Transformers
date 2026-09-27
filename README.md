@@ -11,7 +11,7 @@ The project evaluates continuous-time masked autoencoding and downstream clinica
 - `src/pretraining_data_preparation/`: tensor formatting and event masking.
 - `src/pretraining/`: GC self-supervised pretraining.
 - `src/finetuning/`: AP/NF downstream fine-tuning.
-- `src/utils/`: frequency-weight generation and supporting utilities.
+- `src/utils/`: frequency-weight generation and five-fold AP/NF metric aggregation.
 - `config/`: GC pretraining and AP/NF fine-tuning configurations.
 - `run_master_pipeline.sh`: SLURM orchestration script.
 
